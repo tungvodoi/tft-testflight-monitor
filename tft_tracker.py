@@ -19,7 +19,7 @@ def check_testflight():
         soup = BeautifulSoup(response.text, 'html.parser')
         page_text = soup.get_text()
         
-        if "This beta is full" in page_text and "not accepting any new testers" not in page_text:
+        if "This beta is full" not in page_text and "not accepting any new testers" not in page_text:
             send_discord_alert()
             
     except Exception as e:
