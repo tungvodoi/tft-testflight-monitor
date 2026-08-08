@@ -1,0 +1,32 @@
+name: TFT TestFlight Monitor
+
+on:
+  schedule:
+    # Backstop relaunch every 6 hours — each run polls internally for ~5h45m,
+    # so there's little to no gap in coverage.
+    - cron: "0 */6 * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: tft-monitor
+  cancel-in-progress: false   # if a run is still going, queue rather than kill it
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350   # 5h50m — leaves buffer under the 6h hard limit
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run monitor loop
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          PUSHCUT_WEBHOOK: ${{ secrets.PUSHCUT_WEBHOOK }}
+        run: python tft_tracker.py
